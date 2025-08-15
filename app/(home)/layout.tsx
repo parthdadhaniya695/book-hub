@@ -10,6 +10,7 @@ function HomeLayout( { children } : { children: React.ReactNode } ) {
         <Navbar/>
         {children}
         <Footer/>
+
     </div>
   )
 }

@@ -1,28 +1,29 @@
 import React from 'react'
-import Logo from '@/components/logo'
-import SearchBar from './search-bar'
+import Logo from './logo'
+import Searchbar from './search-bar'
 
 function Header() {
   return (
     <>
-      <header className="py-2 lg:py-4 ">
+      <header className="py-2 lg:py-4 container mx-auto">
         {/* mobile */}
-        <div className='flex lg:hidden container mx-auto flex-col justify-between p-2'>
-          <div className='flex items-center'>
+        <div className="flex sm:hidden container flex-col justify-between p-2">
+          <div className="flex items-center">
             {/* logo */}
             <Logo />
             {/* sidebar trigger */}
           </div>
-          <SearchBar />
+
+          <Searchbar/>
         </div>
 
         {/* desktop */}
-        <div className='hidden lg:flex container mx-auto flex-col justify-between p-2'>
-          <div className='flex items-center'>
+        <div className="hidden sm:flex items-center justify-between">
+          
             {/* logo */}
             <Logo />
-          </div>
-          <SearchBar />
+
+          <Searchbar/>
         </div>
       </header>
     </>

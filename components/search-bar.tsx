@@ -3,34 +3,37 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 
-function SearchBar() {
+function Searchbar() {
 
-    async function doSearch(formData : FormData) {
-        "use server"
-        const search_by = formData.get('search_by')
-        const search = formData.get('search')
+  async function doSearch(formData: FormData) {
+    'use server'
 
-        console.log(search_by, search)
-    }
+    const search_by = formData.get('search_by')
+    const search = formData.get('search')
+
+    console.log({ search_by, search })
+  }
+
   return (
     <form action={doSearch}>
-        <div className='flex flex-col w-full space-y-2 sm:space-y-0 
-        sm:flex-row lg:max-w-lg sm:items-center sm:space-x-2'>
-            <p className='text-slate-500 text-sm min-w-[70px]'>Search by</p>
-            <Select name='search_by'>
-                <SelectTrigger className='w-full lg:w-[480px]'>
-                    <SelectValue placeholder='Keyword' />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value='title'>Title</SelectItem>
-                    <SelectItem value='category'>Category</SelectItem>
-                </SelectContent>
-            </Select>
-            <Input type='search' placeholder='Search...' name='search' />
-            <Button type='submit'>Search</Button>
-        </div>
+      <div className='flex flex-col w-full space-y-2 sm:space-y-0
+      sm:flex-row lg:max-w-lg sm:items-center sm:space-x-2
+      '>
+        <p className='text-slate-500 text-sm min-w-[70px]'>Search by</p>
+        <Select name='search_by'>
+          <SelectTrigger className='w-full lg:w-[480px]'>
+            <SelectValue placeholder='Keyword' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='title'>Title</SelectItem>
+            <SelectItem value='category'>Category</SelectItem>
+          </SelectContent>
+        </Select>
+        <Input type='search' placeholder='Search...' name='search' />
+        <Button type='submit'>Search</Button>
+      </div>
     </form>
   )
 }
 
-export default SearchBar
+export default Searchbar
