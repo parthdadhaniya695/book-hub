@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import React from 'react'
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger } from './ui/navigation-menu'
+import { User2Icon } from 'lucide-react'
 
 function Navbar() {
   return (
@@ -26,8 +27,24 @@ function Navbar() {
                       <Link href='library-card'
                        className='block space-y-1 p-3 rounded hover:bg-accent'
                       >
-                        <div>Library Card</div>
-                        <p></p>
+                        <div className='font-medium leading-none'>Library Card</div>
+                        <p className='text-sm text-muted-foreground'>Use your library card to borrow materials, access digital resources, and explore library technology.</p>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href='book-a-room'
+                       className='block space-y-1 p-3 rounded hover:bg-accent'
+                      >
+                        <div className='font-medium leading-none'>Book a room</div>
+                        <p className='text-sm text-muted-foreground'>Book a room for a meeting or group discussions.</p>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href='equipment-rental'
+                       className='block space-y-1 p-3 rounded hover:bg-accent'
+                      >
+                        <div className='font-medium leading-none'>Equipment rental</div>
+                        <p className='text-sm text-muted-foreground'>Rent 3D printers, projectors and more.</p>
                       </Link>
                     </li>
                   </ul>
@@ -36,6 +53,7 @@ function Navbar() {
             </NavigationMenuList>
           </NavigationMenu>
         </div>
+        <User2Icon size={16}/>
       </div>
     </nav>
   )
