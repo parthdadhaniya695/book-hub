@@ -22,7 +22,7 @@ function Navbar() {
               <NavigationMenuItem>
                 <NavigationMenuTrigger>Library resources</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className='flex flex-col p-4 md:w-[480px] lg:w-[500px]'>
+                  <ul className='flex flex-col p-4 md:w-[400px] lg:w-[500px]'>
                     <li>
                       <Link href='library-card'
                        className='block space-y-1 p-3 rounded hover:bg-accent'
