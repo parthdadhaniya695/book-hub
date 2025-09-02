@@ -1,8 +1,14 @@
 import { useForm } from 'react-hook-form'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
-import { Form, FormField } from './ui/form'
+import { Form, FormControl, FormField, FormItem, FormLabel } from './ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { Input } from './ui/input'
+import { Button } from './ui/button'
+import { addCategory } from '@/actions/actions'
+import { usePathname } from 'next/navigation'
+import { useToast } from '@/hooks/use-toast'
+
 
 type Props = {
   open: boolean,
@@ -18,11 +24,21 @@ const formSchema = z.object({
 })
 
 function AddCategoryDialog({ setOpen, open, category }: Props) {
-
+  const { toast } = useToast()
+  const path = usePathname()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { name: '' }
   });
+
+  const onSubmit = async ( values: z.infer<typeof formSchema>) => {
+    await addCategory(values.name, path)
+    toast({
+      description: 'Category added successfully',
+    })
+    form.reset()
+
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -31,14 +47,21 @@ function AddCategoryDialog({ setOpen, open, category }: Props) {
           <DialogTitle>Add category</DialogTitle>
           <DialogDescription></DialogDescription>
           <Form {...form}>
-            <form>
+            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-1'>
                 <FormField
                   control={form.control}
                   name='name'
                   render={({ field }) => (
-                    <input {...field} placeholder='Category name' />
+                    <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <FormControl>
+                            <Input {...field} placeholder='Category name' />
+                        </FormControl>
+                    </FormItem>
                   )}
                 />
+
+                <Button type='submit'>Save</Button>
             </form>
           </Form>
         </DialogHeader>

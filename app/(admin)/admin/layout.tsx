@@ -4,11 +4,14 @@ import React from 'react'
 
 function AdminLayout( {children} : {children: React.ReactNode} ) {
   return (
-    <div>
+    <div className='p-2 space-y-2'>
         <SidebarProvider>
             <AdminSidebar/>
-            {children}
-        </SidebarProvider>
+            <div className="container">
+              {children}
+            </div>
+            
+        </SidebarProvider> 
         
     </div>
   )

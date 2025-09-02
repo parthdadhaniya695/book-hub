@@ -3,7 +3,7 @@ import React from 'react'
 
 function CategoriesPage() {
   return (
-    <div>
+    <div className='flex flex-col space-y-4'>
       <AddCategoryButton />
     </div>
   )
