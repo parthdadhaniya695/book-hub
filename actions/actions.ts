@@ -68,12 +68,104 @@ export async function deleteCategory(id: number, path: string) {
     }
 }
 
+export async function getCategories(offset: number, limit: number) {
 
+    try {
+
+        let categories
+        let total
+
+        if (limit === -1) {
+            categories = await prisma.book_categories.findMany()
+            total = categories.length
+        } else {
+            [categories, total] = await prisma.$transaction([
+                prisma.book_categories.findMany({ skip: offset, take: limit }),
+                prisma.book_categories.count()
+            ])
+        }
+
+        return { data: categories, total: total }
+
+    } catch (error) {
+        throw error
+    }
+}
 ////////////////////////////////////////////////////////////////////////////////
 //              Books
 ////////////////////////////////////////////////////////////////////////////////
+export async function addBook({
+    name,
+    isbn,
+    no_of_copies,
+    category,
+    path,
+    photos,
+    publish_year,
+    author
+}: {
+    name: string,
+    isbn: string,
+    no_of_copies: number,
+    category: number[],
+    path: string,
+    photos: string[],
+    publish_year: number,
+    author: string
+}) {
 
+    try {
 
+        await prisma.$transaction(async t => {
+
+            const book = await t.books.create({
+                data: {
+                    name: name,
+                    isbn: isbn,
+                    no_of_copies: no_of_copies,
+                    publish_year: publish_year,
+                    author: author
+                }
+            })
+
+            if (category && category.length > 0) {
+                const data = category.map(cat => ({
+                    book_id: book.book_id,
+                    category_id: cat
+                }))
+
+                await t.book_category_links.createMany({ data })
+            }
+
+            // save photos
+            if (photos && photos.length > 0) {
+                const data = photos.map(photo => ({
+                    book_id: book.book_id,
+                    url: photo
+                }))
+
+                await t.book_photos.createMany({ data })
+            }
+            revalidatePath(path)
+        })
+
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function deleteBook(book_id: number, path: string) {
+    
+    await prisma.$transaction(async t => {
+        await t.books.delete({
+            where: {
+                book_id: book_id
+            }
+        })
+    })
+
+    revalidatePath(path)
+}
 ////////////////////////////////////////////////////////////////////////////////
 //              Users
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,3 +179,33 @@ export async function deleteCategory(id: number, path: string) {
 ////////////////////////////////////////////////////////////////////////////////
 //              Fines
 ////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+//              Photos
+////////////////////////////////////////////////////////////////////////////////
+export async function addPhoto(table: string, entity_id: number, url: string, path: string) {
+  try {
+    await prisma.$transaction(async t => {
+      if (table === 'book') {
+        await t.book_photos.create({
+          data: {
+            book_id: entity_id,
+            url: url
+          }
+        })
+      } else if (table === 'activity') {
+        await t.activity_photos.create({
+          data: {
+            activity_id: entity_id,
+            url: url
+          }
+        })
+      }
+    })
+
+    revalidatePath(path)
+  } catch (error) {
+    throw error
+  }
+}

@@ -1,5 +1,5 @@
 import { Book } from '@/app/(admin)/admin/(cataloge)/columns'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
 import z from 'zod'
 import { usePathname } from 'next/navigation'
@@ -7,6 +7,14 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import { Input } from './ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
+import { Button } from './ui/button'
+import { cn } from '@/lib/utils'
+import { Check, ChevronsUpDown, Loader } from 'lucide-react'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command'
+import { addBook, addPhoto, getCategories } from '@/actions/actions'
+import { useToast } from '@/hooks/use-toast'
+import ImageDropzone from './image-dropzone'
 
 type props = {
     open: boolean,
@@ -34,9 +42,10 @@ const formSchema = z.object({
 })
 
 function AddBookDialog({ open, setOpen, book }: props) {
-    const [categories, setCategories] = React.
-    useState<{category_id: number, name: string}[]>([])
+    const [categories, setCategories] =
+        useState<{ category_id: number, category_name: string }[]>([])
     const [processing, setProcessing] = React.useState(false)
+    const { toast } = useToast()
     const path = usePathname()
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -52,6 +61,59 @@ function AddBookDialog({ open, setOpen, book }: props) {
         }
     })
 
+    useEffect(() => {
+
+        (async () => {
+            const cats = await getCategories(0, -1)
+            setCategories(cats.data)
+        }
+
+        )()
+    }, [])
+
+    const handleItemSelect = (item: number) => {
+        const newValue = form.getValues('category').slice()
+        const itemIndex = newValue.indexOf(item)
+
+        if (itemIndex === -1) {
+            newValue.push(item)
+        } else {
+            newValue.splice(itemIndex, 1)
+        }
+
+        form.setValue('category', newValue)
+    }
+
+    const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+
+        setProcessing(true)
+
+        await addBook({ ...values, path: path })
+
+        toast({
+            description: "Book added successfully"
+        })
+        
+        setProcessing(false)
+    }
+
+    const handleFileAdd = async (filesToUpload: string[]) => {
+
+        // if (book) {
+        //     const newPhoto = await addPhoto('book', book.book_id, filesToUpload[0], path)
+
+        //     if (newPhoto) {
+        //         book.book_photos?.push(newPhoto)
+        //     }
+        // }
+        // const existingPhotos = form.getValues('photos')
+        // form.setValue('photos', [...existingPhotos, ...filesToUpload])
+    }
+
+    const handleFileDelete = async (url: string) => {
+
+    }
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent>
@@ -59,7 +121,7 @@ function AddBookDialog({ open, setOpen, book }: props) {
                     <DialogTitle>Add Book</DialogTitle>
                     <DialogDescription></DialogDescription>
                     <Form {...form}>
-                        <form className='space-y-4'>
+                        <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-4'>
                             <FormField
                                 control={form.control}
                                 name='name'
@@ -127,15 +189,85 @@ function AddBookDialog({ open, setOpen, book }: props) {
                                 control={form.control}
                                 name='category'
                                 render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Publish year</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="2024" {...field} />
-                                        </FormControl>
+                                    <FormItem className='flex flex-col'>
+                                        <FormLabel>Category</FormLabel>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <FormControl>
+                                                    <Button
+                                                        variant="outline"
+                                                        role="combobox"
+                                                        className={cn("justify-between",
+                                                            !field.value && "text-muted-foreground"
+                                                        )}
+                                                    >
+                                                        {
+                                                            field.value.length > 0 ?
+                                                                field.value
+                                                                    .map(val =>
+                                                                        categories.find(c => c.category_id === val)?.category_name)
+                                                                    .join(", ") : "Select a category"
+                                                        }
+                                                        <ChevronsUpDown className="opacity-50" />
+                                                    </Button>
+                                                </FormControl>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[300px] p-0">
+                                                <Command>
+                                                    <CommandInput
+                                                        placeholder="Search category..."
+                                                        className="h-9"
+                                                    />
+                                                    <CommandList>
+                                                        <CommandEmpty>No category found.</CommandEmpty>
+                                                        <CommandGroup>
+                                                            {categories.map((category) => (
+                                                                <CommandItem
+                                                                    value={category.category_name}
+                                                                    key={category.category_id}
+                                                                    onSelect={() => handleItemSelect(category.category_id)}>
+                                                                    {category.category_name}
+                                                                    <Check
+                                                                        className={cn(
+                                                                            "ml-auto",
+                                                                            field.value.includes(category.category_id)
+                                                                                ? "opacity-100"
+                                                                                : "opacity-0"
+                                                                        )}
+                                                                    />
+                                                                </CommandItem>
+                                                            ))}
+                                                        </CommandGroup>
+                                                    </CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
+                                        <FormDescription>
+                                            If a book belongs to multiple categories please select them.
+                                        </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
+
+                            <FormField
+                                control={form.control}
+                                name='photos'
+                                render={({ field }) => (
+                                    <ImageDropzone
+                                        photos={field.value}
+                                        onFilesAdded={handleFileAdd}
+                                        // onFileDelete={handleFileDelete}
+                                    />
+                                )}
+                            />
+
+                            <div className='flex flex-col w-full space-y-2'>
+                                {processing ? <div className="flex"><Loader className='mr-2' />Saving...</div> :
+                                    <Button type='submit'>Save</Button>
+                                }
+                            </div>
+
                         </form>
                     </Form>
                 </DialogHeader>

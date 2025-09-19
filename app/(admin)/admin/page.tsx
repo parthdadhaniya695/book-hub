@@ -30,7 +30,7 @@ async function AdminPage({
         },
         book_category_links: {
           select: {
-            category_id: true
+            category_id: true,
           }
         }
       }
@@ -41,7 +41,7 @@ async function AdminPage({
   return (
     <div>
       <AddBookButton />
-      <CatalogTable />
+      <CatalogTable data={{data: books, total: total}} />
     </div>
   )
 }
