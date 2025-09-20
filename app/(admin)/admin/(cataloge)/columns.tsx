@@ -27,7 +27,8 @@ export const columns: ColumnDef<Book>[] = [
         accessorKey: "book_photos",
         enableSorting: false,
         header: ({ column }) => <DataTableColumnHeader column={column} title="Image" />,
-        cell: ({ row }) => <Image width={40} height={0} alt="" src={((row.getValue('book_photos') as unknown) as Photo[]).map(p => p.url).pop()!} />
+        cell: ({ row }) => ((row.getValue('book_photos') as unknown) as Photo[]).length > 0 && <Image width={40} height={0} alt="" 
+        src={((row.getValue('book_photos') as unknown) as Photo[]).map(p => p.url).pop()!} />
     },
     {
         accessorKey: "name",

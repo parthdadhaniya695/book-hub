@@ -12,7 +12,7 @@ import { Button } from './ui/button'
 import { cn } from '@/lib/utils'
 import { Check, ChevronsUpDown, Loader } from 'lucide-react'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command'
-import { addBook, addPhoto, getCategories } from '@/actions/actions'
+import { addBook, addPhoto, deletePhoto, getCategories, updateBook } from '@/actions/actions'
 import { useToast } from '@/hooks/use-toast'
 import ImageDropzone from './image-dropzone'
 
@@ -71,6 +71,20 @@ function AddBookDialog({ open, setOpen, book }: props) {
         )()
     }, [])
 
+
+    useEffect(() => {
+        if (book) {
+            form.setValue('id', book.book_id)
+            form.setValue('name', book.name)
+            form.setValue('isbn', book.isbn)
+            form.setValue('no_of_copies', book.no_of_copies)
+            form.setValue('publish_year', book.publish_year)
+            form.setValue('category', book.book_category_links?.map(c => c.category_id) as number[])
+            form.setValue('photos', book.book_photos?.map(p => p.url) || [])
+            form.setValue('author', book.author)
+        }
+    }, [book, form])
+
     const handleItemSelect = (item: number) => {
         const newValue = form.getValues('category').slice()
         const itemIndex = newValue.indexOf(item)
@@ -88,30 +102,48 @@ function AddBookDialog({ open, setOpen, book }: props) {
 
         setProcessing(true)
 
-        await addBook({ ...values, path: path })
+        let message = "Book added"
+
+        if (book) {
+            await updateBook({ ...values, path })
+            message = "Book updated"
+            setOpen(false)
+        } else {
+            await addBook({ ...values, path: path })
+
+        }
 
         toast({
-            description: "Book added successfully"
+            description: message,
         })
-        
+        form.reset()
         setProcessing(false)
     }
 
     const handleFileAdd = async (filesToUpload: string[]) => {
 
-        // if (book) {
-        //     const newPhoto = await addPhoto('book', book.book_id, filesToUpload[0], path)
+        if (book) {
+            const newPhoto = await addPhoto('book', book.book_id, filesToUpload[0], path)
 
-        //     if (newPhoto) {
-        //         book.book_photos?.push(newPhoto)
-        //     }
-        // }
-        // const existingPhotos = form.getValues('photos')
-        // form.setValue('photos', [...existingPhotos, ...filesToUpload])
+            if (newPhoto) {
+                book.book_photos?.push(newPhoto)
+            }
+        }
+
+        const existingPhotos = form.getValues('photos')
+        form.setValue('photos', [...existingPhotos, ...filesToUpload])
     }
 
     const handleFileDelete = async (url: string) => {
 
+        if (book) {
+            const photoToDelete = book.book_photos?.filter(bp => bp.url === url)
+            if (photoToDelete && photoToDelete.length > 0) {
+                await deletePhoto('book', photoToDelete[0].photo_id, path)
+            }
+        }
+        const updatedPhotos = form.getValues('photos').filter(p => p !== url) ?? []
+        form.setValue('photos', updatedPhotos)
     }
 
     return (
@@ -257,7 +289,7 @@ function AddBookDialog({ open, setOpen, book }: props) {
                                     <ImageDropzone
                                         photos={field.value}
                                         onFilesAdded={handleFileAdd}
-                                        // onFileDelete={handleFileDelete}
+                                    onFileDelete={handleFileDelete}
                                     />
                                 )}
                             />

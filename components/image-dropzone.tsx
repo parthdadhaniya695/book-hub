@@ -31,6 +31,7 @@ function ImageDropzone({
 
     // this is when someone passes up photos
     useEffect(() => {
+        
         if (photos && photos?.length > 0) {
             const photo: UploadInterface[] = []
 
