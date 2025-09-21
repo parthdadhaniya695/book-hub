@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import bcrypt from 'bcryptjs'
 
 ////////////////////////////////////////////////////////////////////////////////
 //              Category
@@ -230,7 +231,88 @@ export async function deleteBook(book_id: number, path: string) {
 ////////////////////////////////////////////////////////////////////////////////
 //              Users
 ////////////////////////////////////////////////////////////////////////////////
+export async function addUser(name: string, email: string, library_card_no: string, role: string, is_active: boolean, path: string) {
 
+    try {
+
+        const hashPassword = await bcrypt.hash('password', 10)
+
+        const category = await prisma.$transaction([
+            prisma.users.create({
+                data: {
+                    name: name,
+                    email: email,
+                    library_card_no: library_card_no,
+                    role: role,
+                    is_active: is_active,
+                    password: role === 'staff' ? hashPassword : '',
+                    image: '',
+                    profile_status: role === 'staff' ? 'pending' : ''
+                }
+            })
+        ])
+
+        revalidatePath(path)
+        return category
+
+    } catch(error) {
+        throw error
+    }
+}
+
+export async function updateUser(user_id: number, name: string, email: string, library_card_no: string, role: string, is_active: boolean, path: string) {
+
+    if (!user_id) return { message: 'Missing data is required' }
+
+    try {
+
+        // use transaction. If book creation fails we don't want to create category links
+        await prisma.$transaction(async (transaction) => {
+
+            await transaction.users.update({
+                where: {
+                    user_id: user_id
+                },
+                data: {
+                    name: name,
+                    email: email,
+                    role: role,
+                    library_card_no: library_card_no,
+                    is_active: is_active,
+                }
+            })
+        })
+
+        if (path) revalidatePath(path)
+
+        return { message: 'user updated' }
+
+    } catch (error) {
+        //return { message: 'Database Error: Failed to Update User.' };
+        throw error
+    }
+}
+
+export async function deleteUser(id: number, path: string) {
+
+    try {
+
+        const result = await prisma.$transaction(async (transaction) => {
+            await transaction.users.delete({
+                where: {
+                    user_id: id
+                }
+            })
+        })
+
+        revalidatePath(path)
+
+        return result
+
+    } catch (error) {
+        throw error
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //              Activities
@@ -324,7 +406,48 @@ export async function deleteActivity(id: number, path: string) {
 ////////////////////////////////////////////////////////////////////////////////
 //              Fines
 ////////////////////////////////////////////////////////////////////////////////
+export async function markAsPaid(id: number, path: string) {
+    try {
 
+        await prisma.$transaction(async (transaction) => {
+            await transaction.fines.update({
+                where: {
+                    fine_id: id
+                }, 
+                data: {
+                    paid_date: new Date()
+                }
+            })
+        })
+
+        revalidatePath(path)
+
+        return { message: "Fine paid" }
+
+    } catch (error) {
+        throw error
+    }
+}
+
+export async function deleteFine(id: number, path: string) {
+    try {
+
+        await prisma.$transaction(async (transaction) => {
+            await transaction.fines.delete({
+                where: {
+                    fine_id: id
+                }
+            })
+        })
+
+        revalidatePath(path)
+
+        return { message: "Fine deleted" }
+
+    } catch (error) {
+        throw error
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //              Photos

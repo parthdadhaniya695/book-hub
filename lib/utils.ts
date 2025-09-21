@@ -52,3 +52,34 @@ export function getTimeSlots(startTime = "00:00", endTime="18:00"): ReturnType[]
 
   return timeArray
 }
+
+/*
+  credit: https://medium.com/@sungbinkim98
+*/
+export const getDateWithOffset = (date: Date) => {
+
+  if (typeof date === 'string') {
+    const datePart = (date as string).split('T')[0]
+    const fd = new Date(new Date(datePart).getTime() + new Date().getTimezoneOffset() * 60000)
+    return fd
+  }
+
+  const dt = new Date()
+  return new Date(date.getTime() + dt.getTimezoneOffset() * 60000)
+}
+
+export function formatAmountForDisplay(
+  amount: number,
+  currency: string
+): string {
+
+  const numberFormat = new Intl.NumberFormat(['en-US'], {
+    style: 'currency',
+    currency: currency,
+    currencyDisplay: 'symbol'
+  })
+
+  const formatedAmount = numberFormat.format(amount)
+
+  return formatedAmount === '$NaN' ? '' : formatedAmount
+}
