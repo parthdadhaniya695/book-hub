@@ -216,8 +216,8 @@ export async function updateBook({
 }
 
 export async function deleteBook(book_id: number, path: string) {
-    
-    await prisma.$transaction(async t => 
+
+    await prisma.$transaction(async t =>
         await t.books.delete({
             where: {
                 book_id: book_id
@@ -235,8 +235,92 @@ export async function deleteBook(book_id: number, path: string) {
 ////////////////////////////////////////////////////////////////////////////////
 //              Activities
 ////////////////////////////////////////////////////////////////////////////////
+export async function addActivity({ title, description, activity_date, start_time, end_time, age_group, capacity, photos, path }:
+    { title: string, description: string, activity_date: Date, start_time: string, end_time: string, age_group: string, capacity: number, photos: string[], path: string }
+) {
 
+    try {
 
+        await prisma.$transaction(async t => {
+            const result = await t.activities.create({
+                data: {
+                    title: title,
+                    description: description,
+                    activity_date: activity_date,
+                    start_time: start_time,
+                    end_time: end_time,
+                    age_group: age_group,
+                    capacity: capacity
+                }
+            })
+
+            //save photos
+            if (photos && photos.length > 0) {
+                const data = photos.map(photo => ({
+                    activity_id: result.activity_id,
+                    url: photo
+                }))
+
+                await t.activity_photos.createMany({ data })
+            }
+
+        })
+
+        revalidatePath(path)
+
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function updateActivity({ activity_id, title, description, activity_date, start_time, end_time, age_group, capacity, path }:
+    { activity_id: number, title: string, description: string, activity_date: Date, start_time: string, end_time: string, age_group: string, capacity: number, path: string }
+) {
+
+    try {
+
+        await prisma.$transaction([
+            prisma.activities.update({
+                where: {
+                    activity_id: activity_id
+                },
+                data: {
+                    title: title,
+                    description: description,
+                    activity_date: activity_date,
+                    start_time: start_time,
+                    end_time: end_time,
+                    age_group: age_group,
+                    capacity: capacity
+                }
+            })
+        ])
+
+        revalidatePath(path)
+
+    } catch (error) {
+        throw error
+    }
+}
+
+export async function deleteActivity(id: number, path: string) {
+
+    try {
+
+        await prisma.$transaction([
+            prisma.activities.delete({
+                where: {
+                    activity_id: id
+                }
+            })
+        ])
+
+        revalidatePath(path)
+
+    } catch (error) {
+        throw error;
+    }
+}
 ////////////////////////////////////////////////////////////////////////////////
 //              Fines
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,57 +330,57 @@ export async function deleteBook(book_id: number, path: string) {
 //              Photos
 ////////////////////////////////////////////////////////////////////////////////
 export async function addPhoto(table: string, entity_id: number, url: string, path: string) {
-  try {
-    const newPhoto = await prisma.$transaction(async t => {
+    try {
+        const newPhoto = await prisma.$transaction(async t => {
 
-      if (table === 'book') {
-        return await t.book_photos.create({
-          data: {
-            book_id: entity_id,
-            url: url
-          }
+            if (table === 'book') {
+                return await t.book_photos.create({
+                    data: {
+                        book_id: entity_id,
+                        url: url
+                    }
+                })
+            } else if (table === 'activity') {
+                return await t.activity_photos.create({
+                    data: {
+                        activity_id: entity_id,
+                        url: url
+                    }
+                })
+            }
         })
-      } else if (table === 'activity') {
-        return await t.activity_photos.create({
-          data: {
-            activity_id: entity_id,
-            url: url
-          }
-        })
-      }
-    })
 
-    revalidatePath(path)
-    return { photo_id: newPhoto?.photo_id as number, url: newPhoto?.url as string }
+        revalidatePath(path)
+        return { photo_id: newPhoto?.photo_id as number, url: newPhoto?.url as string }
 
-  } catch (error) {
-    throw error
-  }
+    } catch (error) {
+        throw error
+    }
 }
 
 export async function deletePhoto(table: string, id: number, path: string) {
-  try {
-    const result = await prisma.$transaction(async t => {
+    try {
+        const result = await prisma.$transaction(async t => {
 
-      if (table === 'book') {
-        await t.book_photos.delete({
-          where: {
-            photo_id: id
-          }
+            if (table === 'book') {
+                await t.book_photos.delete({
+                    where: {
+                        photo_id: id
+                    }
+                })
+            } else if (table === 'activity') {
+                await t.activity_photos.delete({
+                    where: {
+                        photo_id: id
+                    }
+                })
+            }
         })
-      } else if (table === 'activity') {
-        await t.activity_photos.delete({
-          where: {
-            photo_id: id
-          }
-        })
-      }
-    })
 
-    revalidatePath(path)
-    return result
+        revalidatePath(path)
+        return result
 
-  } catch (error) {
-    throw error
-  }
+    } catch (error) {
+        throw error
+    }
 }
