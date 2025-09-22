@@ -1,7 +1,8 @@
 import React from 'react'
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar'
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar'
 import Link from 'next/link'
 import { Library, MapIcon, PartyPopper, Receipt, User2 } from 'lucide-react'
+import UserButton from './user-button'
 
 const menu_items = [
   {
@@ -55,6 +56,13 @@ function AdminSidebar() {
             }
           </SidebarMenu>
         </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <UserButton />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
     </Sidebar>
   )
 }
