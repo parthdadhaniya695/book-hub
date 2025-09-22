@@ -40,8 +40,9 @@ function AddUserDialog({ open, setOpen, user }: Props) {
     const path = usePathname()
 
     const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
+            user_id: -1,
             name: "",
             email: '',
             library_card_no: '',
@@ -87,9 +88,9 @@ function AddUserDialog({ open, setOpen, user }: Props) {
                     <DialogTitle>List user</DialogTitle>
                     <DialogDescription></DialogDescription>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-1'>
+                        <form onSubmit={form.handleSubmit(onSubmit as any)} className='space-y-1'>
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name='name'
                                 render={({ field }) => (
                                     <FormItem>
@@ -102,7 +103,7 @@ function AddUserDialog({ open, setOpen, user }: Props) {
                             />
 
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name='email'
                                 render={({ field }) => (
                                     <FormItem>
@@ -115,7 +116,7 @@ function AddUserDialog({ open, setOpen, user }: Props) {
                             />
 
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name='library_card_no'
                                 render={({ field }) => (
                                     <FormItem className='grid'>
@@ -133,7 +134,7 @@ function AddUserDialog({ open, setOpen, user }: Props) {
                             />
 
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name='role'
                                 render={({ field }) => (
                                     <FormItem className='grid'>
@@ -155,7 +156,7 @@ function AddUserDialog({ open, setOpen, user }: Props) {
                             />
 
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name='is_active'
                                 render={({ field }) => (
                                     <FormItem className='flex items-center space-x-3 space-y-0'>

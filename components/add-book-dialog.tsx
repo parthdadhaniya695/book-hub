@@ -1,7 +1,7 @@
 import { Book } from '@/app/(admin)/admin/(cataloge)/columns'
 import React, { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
-import z from 'zod'
+import { z } from 'zod'
 import { usePathname } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -28,11 +28,11 @@ const formSchema = z.object({
     isbn: z.string().min(10).max(13),
     author: z.string(),
     publish_year: z.coerce
-        .number({ invalid_type_error: "must be a number" })
+        .number({ message: "must be a number" })
         .positive({ message: 'Value must be positive' })
         .finite({ message: "Must be a valid number" }),
     no_of_copies: z.coerce
-        .number({ invalid_type_error: "must be a number" })
+        .number({ message: "must be a number" })
         .positive({ message: 'Value must be positive' })
         .finite({ message: "Must be a valid number" }),
     category: z.array(z.number()).min(1, {
@@ -49,8 +49,9 @@ function AddBookDialog({ open, setOpen, book }: props) {
     const path = usePathname()
 
     const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
+            id: -1,
             name: "",
             isbn: '',
             author: '',
@@ -153,9 +154,9 @@ function AddBookDialog({ open, setOpen, book }: props) {
                     <DialogTitle>Add Book</DialogTitle>
                     <DialogDescription></DialogDescription>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-4'>
+                        <form onSubmit={form.handleSubmit(handleSubmit as any)} className='space-y-4'>
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name='name'
                                 render={({ field }) => (
                                     <FormItem>
@@ -179,7 +180,7 @@ function AddBookDialog({ open, setOpen, book }: props) {
                                 )}
                             />
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name='isbn'
                                 render={({ field }) => (
                                     <FormItem>
@@ -192,7 +193,7 @@ function AddBookDialog({ open, setOpen, book }: props) {
                                 )}
                             />
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name='no_of_copies'
                                 render={({ field }) => (
                                     <FormItem>
@@ -205,7 +206,7 @@ function AddBookDialog({ open, setOpen, book }: props) {
                                 )}
                             />
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name='publish_year'
                                 render={({ field }) => (
                                     <FormItem>
@@ -218,7 +219,7 @@ function AddBookDialog({ open, setOpen, book }: props) {
                                 )}
                             />
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name='category'
                                 render={({ field }) => (
                                     <FormItem className='flex flex-col'>
@@ -236,7 +237,7 @@ function AddBookDialog({ open, setOpen, book }: props) {
                                                         {
                                                             field.value.length > 0 ?
                                                                 field.value
-                                                                    .map(val =>
+                                                                    .map((val: number) =>
                                                                         categories.find(c => c.category_id === val)?.category_name)
                                                                     .join(", ") : "Select a category"
                                                         }
@@ -283,7 +284,7 @@ function AddBookDialog({ open, setOpen, book }: props) {
                             />
 
                             <FormField
-                                control={form.control}
+                                control={form.control as any}
                                 name='photos'
                                 render={({ field }) => (
                                     <ImageDropzone

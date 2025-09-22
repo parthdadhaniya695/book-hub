@@ -32,7 +32,7 @@ const formSchema = z.object({
   end_time: z.string(),
   age_group: z.string(),
   capacity: z.coerce
-    .number({ invalid_type_error: "must be a number" })
+    .number({ message: "must be a number" })
     .positive({ message: 'Value must be positive' })
     .finite({ message: "Must be a valid number" }),
   photos: z.array(z.string()).default([])
@@ -44,10 +44,14 @@ function AddActivityDialog({ setOpen, open, activity }: Props) {
   const path = usePathname()
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
+      activity_id: -1,
       title: "",
       description: '',
+      activity_date: new Date(),
+      start_time: '',
+      end_time: '',
       age_group: '',
       capacity: 0,
       photos: []
@@ -102,9 +106,9 @@ function AddActivityDialog({ setOpen, open, activity }: Props) {
           <DialogTitle>List activity</DialogTitle>
           <DialogDescription></DialogDescription>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-1'>
+            <form onSubmit={form.handleSubmit(onSubmit as any)} className='space-y-1'>
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name='title'
                 render={({ field }) => (
                   <FormItem>
@@ -146,7 +150,7 @@ function AddActivityDialog({ setOpen, open, activity }: Props) {
 
               <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
                 <FormField
-                  control={form.control}
+                  control={form.control as any}
                   name='start_time'
                   render={({ field }) => (
                     <FormItem className='grid'>

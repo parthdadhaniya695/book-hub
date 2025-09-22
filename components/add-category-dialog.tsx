@@ -28,8 +28,8 @@ function AddCategoryDialog({ setOpen, open, category }: Props) {
   const path = usePathname()
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { name: '' }
+    resolver: zodResolver(formSchema) as any,
+    defaultValues: { id: -1, name: '' }
   });
 
   useEffect(() => {
@@ -71,9 +71,9 @@ function AddCategoryDialog({ setOpen, open, category }: Props) {
           <DialogTitle>Add category</DialogTitle>
           <DialogDescription></DialogDescription>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-1'>
+            <form onSubmit={form.handleSubmit(onSubmit as any)} className='space-y-1'>
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name='name'
                 render={({ field }) => (
                   <FormItem>

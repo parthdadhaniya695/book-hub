@@ -1,5 +1,4 @@
 import NextAuth, { DefaultSession } from "next-auth";
-import { PrismaAdapter } from '@auth/prisma-adapter'
 import { prisma } from "./lib/prisma";
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from "bcryptjs";
@@ -23,7 +22,7 @@ declare module 'next-auth' {
 }
 
 export const { handlers, signIn, signOut, auth }  = NextAuth({
-    adapter: PrismaAdapter(prisma),
+    // The application uses a custom users table and JWT sessions, so no adapter is required.
     debug: true,
     providers: [
         Credentials({
@@ -73,13 +72,14 @@ export const { handlers, signIn, signOut, auth }  = NextAuth({
         async jwt({ token, user }) {
 
             if (user) {
-                token.id = user.id
-                token.email = user.email
-                token.name = user.name
-                token.role = user.role
-                token.profile_status = user.profile_status
-                token.is_active = user.is_active
-                token.user_id = user.user_id
+                // Ensure the session carries our numeric user_id consistently.
+                token.id = String((user as any).user_id)
+                token.email = (user as any).email
+                token.name = (user as any).name
+                token.role = (user as any).role
+                token.profile_status = (user as any).profile_status
+                token.is_active = (user as any).is_active
+                token.user_id = (user as any).user_id
             }
 
             return token
@@ -87,6 +87,7 @@ export const { handlers, signIn, signOut, auth }  = NextAuth({
         async session({ session, token }) {
 
             if (session) {
+                // Keep id as a string (NextAuth default) and expose numeric user_id separately.
                 session.user.id = token.id as string
                 session.user.email = token.email as string
                 session.user.name = token.name

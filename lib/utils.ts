@@ -35,7 +35,7 @@ export function getAvatarLetter(name: string) {
   return name.split(' ')[0].charAt(0).toUpperCase()
 }
 
-export function getTimeSlots(startTime = "00:00", endTime="18:00"): ReturnType[] {
+export function getTimeSlots(startTime = "08:00", endTime="18:00"): ReturnType[] {
   const timeArray : ReturnType[] = []
   const parsedStartTime: Date = new Date(`2000-01-01T${startTime}:00`)
   const parsedEndTime: Date = new Date(`2000-01-01T${endTime}:00`)
@@ -86,4 +86,21 @@ export function formatAmountForDisplay(
   const formatedAmount = numberFormat.format(amount)
 
   return formatedAmount === '$NaN' ? '' : formatedAmount
+}
+
+export function formatAmountForStripe(
+  amount: number,
+  currency: string
+): number {
+
+  const numberFormat = new Intl.NumberFormat(['en-US'], {
+    style:'currency',
+    currency: currency,
+    currencyDisplay: 'symbol'
+  })
+
+  const parts = numberFormat.formatToParts(amount)
+  const hadDecimals = parts.some(part => part.type === 'decimal')
+
+  return hadDecimals ? Math.round(amount * 100) : amount
 }
